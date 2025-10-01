@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                echo "Skipping checkout - code should already be available"
                 script {
                     env.GIT_COMMIT_SHORT = sh(
                         script: 'git rev-parse --short HEAD',
