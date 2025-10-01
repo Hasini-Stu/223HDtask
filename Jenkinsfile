@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         ANDROID_HOME = '/opt/android-sdk'
-        JAVA_HOME = '/usr/lib/jvm/java-11-openjdk-amd64'
+        JAVA_HOME = '/opt/homebrew/Cellar/openjdk/24.0.2/libexec/openjdk.jdk/Contents/Home'
         PATH = "${JAVA_HOME}/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${PATH}"
         GRADLE_OPTS = '-Dorg.gradle.daemon=false'
     }
