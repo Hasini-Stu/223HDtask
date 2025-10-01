@@ -19,7 +19,6 @@ pipeline {
                         script: 'git rev-parse --short HEAD',
                         returnStdout: true
                     ).trim()
-                    env.BUILD_NUMBER = env.BUILD_NUMBER ?: '1'
                 }
             }
         }
@@ -159,9 +158,11 @@ Version: 1.0"""
                 
                 // Wait for SonarQube analysis to complete
                 timeout(time: 10, unit: 'MINUTES') {
-                    def qg = waitForQualityGate()
-                    if (qg.status != 'OK') {
-                        error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                    script {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                        }
                     }
                 }
             }
