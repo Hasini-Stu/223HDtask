@@ -1,6 +1,12 @@
 pipeline {
     agent any
     
+    environment {
+        JAVA_HOME = '/opt/homebrew/Cellar/openjdk@21/21.0.8/libexec/openjdk.jdk/Contents/Home'
+        PATH = "${JAVA_HOME}/bin:${PATH}"
+        GRADLE_OPTS = '-Dorg.gradle.daemon=false'
+    }
+    
     stages {
         stage('Checkout') {
             steps {
