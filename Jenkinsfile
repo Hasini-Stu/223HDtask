@@ -10,10 +10,6 @@ pipeline {
         GRADLE_OPTS = '-Dorg.gradle.daemon=false'
     }
     
-    tools {
-        gradle 'gradle-8.0'
-    }
-    
     stages {
         stage('Checkout') {
             steps {
@@ -46,15 +42,13 @@ pipeline {
                 archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', fingerprint: true
                 
                 // Store build info
-                writeFile file: 'build-info.txt', text: """
-Build Information:
+                writeFile file: 'build-info.txt', text: """Build Information:
 ==================
 Build Number: ${env.BUILD_NUMBER}
 Git Commit: ${env.GIT_COMMIT_SHORT}
 Build Time: ${new Date()}
 Project: Android Voting Application
-Version: 1.0
-                """.stripIndent()
+Version: 1.0"""
                 
                 archiveArtifacts artifacts: 'build-info.txt', fingerprint: true
             }
@@ -272,14 +266,12 @@ EOF
                 '''
                 
                 // Store deployment info
-                writeFile file: 'deployment-info.txt', text: """
-Deployment Information:
+                writeFile file: 'deployment-info.txt', text: """Deployment Information:
 ======================
 Environment: Test
 Docker Image: android-voting-app:test-${env.BUILD_NUMBER}
 Deployment Time: ${new Date()}
-Status: Success
-                """.stripIndent()
+Status: Success"""
                 
                 archiveArtifacts artifacts: 'deployment-info.txt', fingerprint: true
             }
