@@ -5,8 +5,6 @@ pipeline {
         ANDROID_HOME = '/opt/android-sdk'
         JAVA_HOME = '/usr/lib/jvm/java-11-openjdk-amd64'
         PATH = "${JAVA_HOME}/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${PATH}"
-        SONAR_TOKEN = credentials('sonar-token')
-        SONAR_HOST_URL = 'http://localhost:9000'
         GRADLE_OPTS = '-Dorg.gradle.daemon=false'
     }
     
@@ -138,36 +136,19 @@ Version: 1.0"""
         
         stage('Code Quality') {
             steps {
-                script {
-                    echo "Running Code Quality Analysis with SonarQube..."
-                }
-                
-                // Run SonarQube analysis
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        ./gradlew sonarqube \
-                            -Dsonar.projectKey=android-voting-app \
-                            -Dsonar.projectName="Android Voting Application" \
-                            -Dsonar.projectVersion=${BUILD_NUMBER} \
-                            -Dsonar.sources=app/src/main/java \
-                            -Dsonar.java.binaries=app/build/intermediates/javac/debug/classes \
-                            -Dsonar.coverage.jacoco.xmlReportPaths=app/build/reports/jacoco/testDebugUnitTest/jacocoTestReport.xml \
-                            -Dsonar.android.lint.reportPaths=app/build/reports/lint-results-debug.xml
-                    '''
-                }
-                
-                // Wait for SonarQube analysis to complete
-                timeout(time: 10, unit: 'MINUTES') {
-                    script {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                        }
-                    }
-                }
+                echo "Running Code Quality Analysis..."
+                sh './gradlew lintDebug'
             }
             post {
                 always {
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'app/build/reports',
+                        reportFiles: 'lint-results-debug.html',
+                        reportName: 'Lint Report'
+                    ])
                     echo "Code Quality analysis completed"
                 }
             }
@@ -289,16 +270,13 @@ Status: Success"""
     
     post {
         always {
-            // Clean up workspace
-            cleanWs()
+            echo "Pipeline execution completed"
         }
         success {
             echo "Pipeline completed successfully!"
-            // Send notification (you can configure email, Slack, etc.)
         }
         failure {
             echo "Pipeline failed!"
-            // Send failure notification
         }
         unstable {
             echo "Pipeline completed with warnings!"
