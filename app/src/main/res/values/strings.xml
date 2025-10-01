@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">voting</string>
+    <string name="profile_account">Account</string>
+    <string name="profile_preferences">Preferences</string>
+    <string name="profile_tip">Tip of the day</string>
+    <string name="profile_help">Help</string>
+    <string name="profile_unlock_premium">Unlock premium features</string>
+    <string name="profile_archived_polls">Archived polls</string>
+    <string name="profile_poll_history">Poll history</string>
+    <string name="profile_archived_questionnaires">Archived questionnaires</string>
+    <string name="profile_questionnaire_history">Questionnaire history</string>
+</resources>
