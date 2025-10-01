@@ -1,5 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
+    id 'jacoco'
+    id 'org.sonarqube' version '4.4.1.3373'
+    id 'org.owasp.dependencycheck' version '8.4.3'
 }
 
 android {
@@ -28,6 +31,12 @@ android {
     }
     buildFeatures {
         viewBinding true
+    }
+    
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
     }
 }
 
@@ -65,11 +74,48 @@ dependencies {
     
     // Testing
     testImplementation libs.junit
+    testImplementation 'org.mockito:mockito-core:5.1.1'
+    testImplementation 'org.mockito:mockito-inline:5.1.1'
+    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+    testImplementation 'org.robolectric:robolectric:4.10.3'
+    
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
 
     // Stripe Android SDK
     implementation 'com.stripe:stripe-android:20.45.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+// JaCoCo configuration
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+}
+
+// SonarQube configuration
+sonarqube {
+    properties {
+        property "sonar.projectKey", "android-voting-app"
+        property "sonar.projectName", "Android Voting Application"
+        property "sonar.host.url", "http://localhost:9000"
+        property "sonar.login", System.getenv("SONAR_TOKEN")
+        property "sonar.sources", "src/main/java"
+        property "sonar.java.binaries", "build/intermediates/javac/debug/classes"
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/testDebugUnitTest/jacocoTestReport.xml"
+        property "sonar.android.lint.reportPaths", "build/reports/lint-results-debug.xml"
+    }
+}
+
+// OWASP Dependency Check configuration
+dependencyCheck {
+    format = 'HTML'
+    suppressionFile = 'dependency-check-suppressions.xml'
+}

@@ -1,75 +1,81 @@
-# Multi-stage Dockerfile for SecureVote app
+# Multi-stage Dockerfile for Android Voting Application
+# Stage 1: Build the Android application
+FROM openjdk:11-jdk-slim AS build
 
-# Stage 1: Build Android APK
-FROM openjdk:11-jdk-slim AS android-builder
-
-# Install Android SDK dependencies
+# Install necessary packages
 RUN apt-get update && apt-get install -y \
     wget \
     unzip \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Set Android SDK environment variables
+# Set environment variables
 ENV ANDROID_HOME=/opt/android-sdk
-ENV PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
+ENV PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
 
-# Download and install Android SDK
-RUN mkdir -p $ANDROID_HOME && \
+# Install Android SDK
+RUN mkdir -p ${ANDROID_HOME} && \
+    cd ${ANDROID_HOME} && \
     wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip && \
-    unzip commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME && \
-    rm commandlinetools-linux-9477386_latest.zip
+    unzip commandlinetools-linux-9477386_latest.zip && \
+    rm commandlinetools-linux-9477386_latest.zip && \
+    mkdir -p cmdline-tools/latest && \
+    mv cmdline-tools/* cmdline-tools/latest/ 2>/dev/null || true
 
 # Accept Android SDK licenses
-RUN yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --licenses
+RUN yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
 
-# Install required SDK components
-RUN $ANDROID_HOME/cmdline-tools/bin/sdkmanager \
+# Install required Android SDK components
+RUN ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager \
     "platform-tools" \
-    "platforms;android-34" \
-    "build-tools;34.0.0"
+    "platforms;android-35" \
+    "build-tools;35.0.0" \
+    "extras;android;m2repository" \
+    "extras;google;m2repository"
+
+# Set working directory
+WORKDIR /app
 
 # Copy project files
-WORKDIR /app
 COPY . .
 
-# Build Android APK
-RUN ./gradlew assembleDebug
+# Build the Android application
+RUN ./gradlew clean assembleDebug
 
-# Stage 2: Python Backend
-FROM python:3.11-slim AS backend
+# Stage 2: Create deployment image
+FROM nginx:alpine AS deployment
 
-WORKDIR /app
+# Install Python for simple HTTP server
+RUN apk add --no-cache python3 py3-pip
 
-# Copy requirements and install dependencies
-COPY stripe_backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the built APK
+COPY --from=build /app/app/build/outputs/apk/debug/app-debug.apk /usr/share/nginx/html/
 
-# Copy backend code
-COPY stripe_backend/ .
+# Create a simple HTML page for APK download
+RUN echo '<!DOCTYPE html>\
+<html>\
+<head>\
+    <title>Android Voting App - Test Deployment</title>\
+    <style>\
+        body { font-family: Arial, sans-serif; margin: 40px; }\
+        .container { max-width: 600px; margin: 0 auto; }\
+        .download-btn { display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; }\
+        .download-btn:hover { background: #0056b3; }\
+    </style>\
+</head>\
+<body>\
+    <div class="container">\
+        <h1>Android Voting Application</h1>\
+        <p>Test deployment of the Android Voting Application</p>\
+        <p>Build: ${BUILD_NUMBER}</p>\
+        <p>Commit: ${GIT_COMMIT_SHORT}</p>\
+        <a href="app-debug.apk" class="download-btn">Download APK</a>\
+    </div>\
+</body>\
+</html>' > /usr/share/nginx/html/index.html
 
-# Expose port
-EXPOSE 4242
+# Expose port 80
+EXPOSE 80
 
-# Run the Flask app
-CMD ["gunicorn", "--bind", "0.0.0.0:4242", "app:app"]
-
-# Stage 3: Final image with both APK and backend
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install dependencies
-COPY stripe_backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy backend code
-COPY stripe_backend/ .
-
-# Copy built APK from android-builder stage
-COPY --from=android-builder /app/app/build/outputs/apk/debug/app-debug.apk ./securevote.apk
-
-# Expose port
-EXPOSE 4242
-
-# Run the Flask app
-CMD ["gunicorn", "--bind", "0.0.0.0:4242", "app:app"]
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

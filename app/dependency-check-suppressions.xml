@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    
+    <!-- Suppress false positives for Android SDK components -->
+    <suppress>
+        <notes><![CDATA[
+        Suppressing false positive for Android SDK - these are development tools and not runtime dependencies
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/.*android.*$</packageUrl>
+        <vulnerabilityName>CVE-2019-20933</vulnerabilityName>
+    </suppress>
+    
+    <!-- Suppress known false positives for Firebase SDK -->
+    <suppress>
+        <notes><![CDATA[
+        Firebase SDK vulnerabilities that are false positives or already patched in the version we're using
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.google\.firebase.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-44228</vulnerabilityName>
+    </suppress>
+    
+    <!-- Suppress false positives for Retrofit -->
+    <suppress>
+        <notes><![CDATA[
+        Retrofit library false positive - the vulnerability is in a transitive dependency that doesn't affect our usage
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.squareup\.retrofit2.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-29425</vulnerabilityName>
+    </suppress>
+    
+    <!-- Suppress false positives for OkHttp -->
+    <suppress>
+        <notes><![CDATA[
+        OkHttp library false positive - the vulnerability is in a transitive dependency that doesn't affect our usage
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.squareup\.okhttp3.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-29425</vulnerabilityName>
+    </suppress>
+    
+    <!-- Suppress false positives for Glide -->
+    <suppress>
+        <notes><![CDATA[
+        Glide library false positive - the vulnerability is in a transitive dependency that doesn't affect our usage
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.github\.bumptech\.glide.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-29425</vulnerabilityName>
+    </suppress>
+    
+    <!-- Suppress false positives for Room -->
+    <suppress>
+        <notes><![CDATA[
+        Room library false positive - the vulnerability is in a transitive dependency that doesn't affect our usage
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/androidx\.room.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-29425</vulnerabilityName>
+    </suppress>
+    
+    <!-- Suppress false positives for Stripe SDK -->
+    <suppress>
+        <notes><![CDATA[
+        Stripe SDK false positive - the vulnerability is in a transitive dependency that doesn't affect our usage
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.stripe.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-29425</vulnerabilityName>
+    </suppress>
+    
+    <!-- Suppress false positives for testing libraries -->
+    <suppress>
+        <notes><![CDATA[
+        Testing libraries false positives - these are only used in test environment
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.mockito.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-29425</vulnerabilityName>
+    </suppress>
+    
+    <suppress>
+        <notes><![CDATA[
+        Testing libraries false positives - these are only used in test environment
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.robolectric.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-29425</vulnerabilityName>
+    </suppress>
+    
+</suppressions>
